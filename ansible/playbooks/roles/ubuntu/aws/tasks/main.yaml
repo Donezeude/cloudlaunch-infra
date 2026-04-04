@@ -1,0 +1,11 @@
+- name: Set Up Software
+  ansible.builtin.include_tasks: 
+    file: software.yaml
+
+- name: Set Up Containers
+  ansible.builtin.include_tasks: 
+    file: container.yaml
+
+- name: Set Up Monitor
+  ansible.builtin.include_tasks: 
+    file: monitor.yaml

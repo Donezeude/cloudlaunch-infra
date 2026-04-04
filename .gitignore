@@ -1,0 +1,12 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.pem
+.terraform.lock.hcl
+
+/docs/
+
+ansible.cfg
+inventory.ini

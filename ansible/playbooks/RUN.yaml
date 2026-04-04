@@ -1,0 +1,16 @@
+---
+- name: Run Terraform
+  ansible.builtin.import_playbook: secondary/run_terraform.yaml
+
+- name: Configure Instance
+  hosts: cloudlaunch
+  become: true
+  tasks:
+    - name: AWS EC2 Instance 
+      ansible.builtin.import_role:
+        name: ubuntu/aws
+      vars:
+        app_port: 5000
+        docker_image: "cloudlaunch:1.0"
+        cloudlaunch_image: cloudlaunch_image_1.0.tar
+        image_name: cloudlaunch

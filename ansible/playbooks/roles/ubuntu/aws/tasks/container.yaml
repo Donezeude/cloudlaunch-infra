@@ -1,0 +1,26 @@
+- name: Start Docker
+  systemd: 
+    name: docker 
+    state: started
+    enabled: yes
+
+- name: Check if Docker Image is present
+  shell: "docker images -q {{ image_name }}"
+  register: image
+  changed_when: false
+
+- name: Grab Docker Images
+  copy:
+    src: "/tmp/docker_images/{{ cloudlaunch_image }}"
+    dest: "/opt/{{ cloudlaunch_image }}"
+  when: image.stdout == ""
+
+- name: Docker Load 
+  shell: "docker load -i /opt/{{ cloudlaunch_image }}"
+  when: image.stdout == ""
+
+- name: Pull and run the app
+  shell: |
+    docker stop cloudlaunch || true
+    docker rm cloudlaunch || true
+    docker run -d --name cloudlaunch --restart always -p 5000:{{ app_port }} {{ docker_image }}

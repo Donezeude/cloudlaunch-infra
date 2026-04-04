@@ -1,0 +1,18 @@
+---
+- name: Execute Terraform (init/apply)
+  hosts: localhost
+  tasks:
+    - name: Get Elastic IP
+      shell: terraform -chdir=../roles/ubuntu/aws/terraform/persistent output -raw eip_ip
+      register: eip_id
+      changed_when: false
+
+    - name: Init/Apply Infastructure
+      community.general.terraform:
+        project_path: "../roles/ubuntu/aws/terraform/infastructure"
+        state: present
+        force_init: true
+        variables: 
+          my_eip: "{{ eip_id.stdout }}"
+
+      

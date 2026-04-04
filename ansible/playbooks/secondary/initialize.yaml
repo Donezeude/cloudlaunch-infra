@@ -1,0 +1,9 @@
+---
+- name: Permanant AWS IP
+  hosts: localhost
+  tasks:
+    - name: Init/Apply Elastic IP
+      community.general.terraform:
+        project_path: "../roles/ubuntu/aws/terraform/persistent"
+        state: present
+        force_init: true

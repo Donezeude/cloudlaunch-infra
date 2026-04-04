@@ -1,0 +1,42 @@
+- name: Install Prereqs and Update apt cache
+  apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - curl
+      - ca-certificates
+    state: present
+    update_cache: yes
+
+- name: Add Docker GPG Key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg 
+    state: present
+
+- name: Add Docker Repo
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: Install Docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+    update_cache: yes
+
+- name: Download CloudWatch agent
+  get_url:
+    url: https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+    dest: /opt/amazon-cloudwatch-agent.deb
+
+- name: Install CloudWatch agent
+  apt:
+    deb: /opt/amazon-cloudwatch-agent.deb
+
+- name: Copy CloudWatch config
+  copy:
+    src: ./files/cloudwatch.json
+    dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
