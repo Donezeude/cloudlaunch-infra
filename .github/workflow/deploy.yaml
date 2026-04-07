@@ -1,0 +1,52 @@
+---
+name: Build and Deploy CloudLaunch
+
+on:
+  push:
+    branches:
+      - github_action #- main
+
+jobs:
+  deploy:
+    runs-on: ubuntu:latest
+    steps:
+      - name: REMOVE RESIDUAL INSTANCE
+        uses: dawidd6/action-ansible-playbook@v9
+        with:
+          playbook: REMOVE.yaml
+          directory: ../../ansible/playbooks
+          configuration: |
+            [defaults]
+            inventory = /Users/da-coder/Documents/cloudlaunch-infra/ansible~/inventory.ini 
+            host_key_checking = false
+            remote_user = ubuntu 
+            timeout = 30
+            
+            [privelege_escalation]
+            become = true
+            become_method = sudo
+          inventory: |
+          [cloudlaunch]
+          35.170.158.123 
+          key: ~/.ssh/my-key.pem
+      
+
+      - name: RUN NEW INSTANCE
+        uses: dawidd6/action-ansible-playbook@v9
+        with:
+          playbook: RUN.yaml
+          directory: ../../ansible/playbooks
+          configuration: |
+            [defaults]
+            inventory = /Users/da-coder/Documents/cloudlaunch-infra/ansible/inventory.ini 
+            host_key_checking = false
+            remote_user = ubuntu 
+            timeout = 30
+            
+            [privelege_escalation]
+            become = true
+            become_method = sudo
+          inventory: |
+          [cloudlaunch]
+          35.170.158.123 
+          key: ~/.ssh/my-key.pem
