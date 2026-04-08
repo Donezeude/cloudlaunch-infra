@@ -28,7 +28,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: cloudlaunch.tar
-          target: /opt/
+          target: /home/ubuntu
 
       - name: Deploy Docker Image on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -40,9 +40,9 @@ jobs:
             sudo docker stop cloudlaunch || true
             sudo docker rm cloudlaunch || true
             sudo docker rmi cloudlaunch:latest || true
-            sudo docker load -i /opt/cloudlaunch.tar 
+            sudo docker load -i /home/ubuntu/cloudlaunch.tar 
             sudo docker run -d --name cloudlaunch --restart always -p 5000:5000 cloudlaunch:latest
-            rm /opt/cloudlaunch.tar
+            rm /home/ubuntu/cloudlaunch.tar
 
       - name: Verify Container is Running
         uses: appleboy/ssh-action@v1.0.3
