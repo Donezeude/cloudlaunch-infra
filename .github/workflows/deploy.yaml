@@ -4,7 +4,7 @@ name: Build and Deploy CloudLaunch
 on:
   push:
     branches:
-      - github_action #- main
+      - main 
 
 jobs:
   deploy:
