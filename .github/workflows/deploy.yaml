@@ -17,7 +17,9 @@ jobs:
         run: docker build --platform linux/amd64 -t cloudlaunch:latest ./app 
 
       - name: Save Docker Image as tar
-        run: docker save -o cloudlaunch.tar cloudlaunch:latest
+        run: |
+          docker save -o cloudlaunch.tar cloudlaunch:latest
+          sudo chmod 644 cloudlaunch.tar
 
       - name: Copy Docker Image to EC2
         uses: appleboy/scp-action@v0.1.7
