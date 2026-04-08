@@ -10,43 +10,44 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: REMOVE RESIDUAL INSTANCE
-        uses: dawidd6/action-ansible-playbook@v9
-        with:
-          playbook: REMOVE.yaml
-          directory: ../../ansible/playbooks
-          configuration: |
-            [defaults]
-            inventory = /Users/da-coder/Documents/cloudlaunch-infra/ansible~/inventory.ini 
-            host_key_checking = false
-            remote_user = ubuntu 
-            timeout = 30
-            
-            [privelege_escalation]
-            become = true
-            become_method = sudo
-          inventory: |
-            [cloudlaunch]
-            35.170.158.123 
-          key: ~/.ssh/my-key.pem
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: RUN NEW INSTANCE
-        uses: dawidd6/action-ansible-playbook@v9
+      - name: Build Docker Image
+        run: docker build --platform linux/amd64 -t cloudlaunch:latest ./app 
+
+      - name: Save Docker Image as tar
+        run: docker save -o cloudlaunch.tar cloudlaunch:latest
+
+      - name: Copy Docker Image to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
-          playbook: RUN.yaml
-          directory: ../../ansible/playbooks
-          configuration: |
-            [defaults]
-            inventory = /Users/da-coder/Documents/cloudlaunch-infra/ansible/inventory.ini 
-            host_key_checking = false
-            remote_user = ubuntu 
-            timeout = 30
-            
-            [privelege_escalation]
-            become = true
-            become_method = sudo
-          inventory: |
-            [cloudlaunch]
-            35.170.158.123 
-          key: ~/.ssh/my-key.pem
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: cloudlaunch.tar
+          target: /opt/
+
+      - name: Deploy Docker Image on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          hosts: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker stop cloudlaunch || true
+            sudo docker rm cloudlaunch || true
+            sudo docker rmi cloudlaunch:latest || true
+            sudo docker load -i /opt/cloudlaunch.tar 
+            sudo docker run -d --name cloudlaunch --restart always -p 5000:5000 cloudlaunch:latest
+            rm /opt/cloudlaunch.tar
+
+      - name: Verify Container is Running
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sleep 5
+            curl -f http://localhost:5000/health
