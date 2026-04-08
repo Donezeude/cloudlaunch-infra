@@ -33,7 +33,7 @@ jobs:
       - name: Deploy Docker Image on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          hosts: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
